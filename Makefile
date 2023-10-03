@@ -6,7 +6,7 @@ SUBMITPATH = ~cs537-1/handin/login/P3
 
 all: wsh
 
-wsh: wsh.c wsh.h 
+wsh: wsh.c wsh.h
 	$(CC) $(CFLAGS) $< -o $@
 
 run: wsh
@@ -20,4 +20,5 @@ submit: pack
 
 clean: 
 	rm -rf *.o wsh
-.PHONY all clean
+	
+.PHONY: all clean

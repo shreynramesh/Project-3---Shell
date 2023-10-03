@@ -8,12 +8,6 @@ void parseInput(struct Process* process, char* ibuf) {
     char* arg;
     int i = 0; // arg index
 
-    // char* ibuf_copy = strdup(ibuf);
-    // if (ibuf_copy == NULL) {
-    //     perror("Memory allocation error");
-    //     exit(-1);
-    // }
-
     // Parsing each space seperated arg
     while ((arg = strsep(&ibuf, " "))) {
         // Removing new line char at the end of command
@@ -45,7 +39,6 @@ void parseInput(struct Process* process, char* ibuf) {
             sprintf(process->argv[i], "%s", arg);
             i++;
         }
-        
     }
 
     process->argc = i;
@@ -76,9 +69,16 @@ int main(int argc, char *argv[]) {
         for(int i = 0; i < process->argc; i++) {
             printf("%s\n", process->argv[i]);
         }
+        printf("Num Args: %i\n", process->argc);
 
         // Freeing resources
-        free(process); // user process input
+        for(int i = 0; i < process->argc; i++) {// user process input
+            free(process->argv[i]);
+            argv[i] = NULL;
+        } 
+        free(process);
+        process = NULL; 
         free(ibuf);  // input buffer
+        ibuf = NULL;
     }
 }

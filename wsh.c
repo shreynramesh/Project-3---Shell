@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include "wsh.h"
 
 void parseInput(struct Process* process, char* ibuf) {
@@ -71,14 +73,26 @@ int main(int argc, char *argv[]) {
         }
         printf("Num Args: %i\n", process->argc);
 
-        // Freeing resources
-        for(int i = 0; i < process->argc; i++) {// user process input
-            free(process->argv[i]);
-            argv[i] = NULL;
-        } 
-        free(process);
-        process = NULL; 
-        free(ibuf);  // input buffer
-        ibuf = NULL;
+
+        // Forking shell in order to run user command
+        int rc = fork();
+        if(rc < 0) { // failed fork
+            perror("Fork to new process failed");
+            exit(-1);
+        } else if(rc == 0)  { // child (user) process
+            execvp(process->argv[0], process->argv);
+        } else { // parent (shell) process
+            wait(NULL); 
+
+            // Freeing resources
+            for(int i = 0; i < process->argc; i++) {// user process input
+                free(process->argv[i]);
+                argv[i] = NULL;
+            } 
+            free(process);
+            process = NULL; 
+            free(ibuf);  // input buffer
+            ibuf = NULL;
+        }
     }
 }

@@ -1,20 +1,27 @@
+#include <stdbool.h>
+#include <stdlib.h>
+
 struct Process {
-    int pid;
-    int pjid;
+    pid_t pid;
+    char **argv;
     int argc;
-    char* argv[256];
+    bool completed;
+    bool stopped;
+    int status;
 };
 
-struct Job { 
+struct Job {
+    char *command;
     int id;
-    struct Process processes[256];
+    pid_t pgid;
+    bool is_bg;
+    struct Process *processes[256];
+    int stdin, stdout, stderr;
+    int numProcesses;
 };
 
-struct JobList {
-    struct Job* fg;
-    struct Job** bg;
-};
+extern struct Process *proc_list[256];
+extern struct Job *job_list[256];
 
-struct JobIdList {
-    int jobs[256];
-};
+int sh_term;
+pid_t sh_pgid;

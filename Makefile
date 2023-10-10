@@ -10,7 +10,6 @@ wsh: wsh.c wsh.h
 	$(CC) $(CFLAGS) $< -o $@
 
 run: wsh
-	export PATH="/bin:$$PATH"
 	./wsh
 
 pack: wsh.c wsh.h Makefile README.md

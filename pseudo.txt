@@ -1,0 +1,202 @@
+struct Process {
+    pid_t pid;
+    int pjid;
+    pid_t pgid;
+    int argc;
+    char *argv[256];
+};
+
+enum ProcessStatus {
+    RUNNING,
+    STOPPED,
+};
+
+struct Job {
+    int jid;
+    int pgid;
+    int fg;
+    enum ProcessStatus status;
+    struct Process **processes;
+};
+
+Job* [256] job_list;
+
+findJob:
+    job_list loop:
+        IF job_list[i]->jid == jid:
+            return job_list[i]
+        END IF
+    END
+    return NULL;
+END
+
+findLargestJob:
+    job_list loop from back:
+        IF job_list[i] != NULL:
+            return job_list[i]
+        END IF
+    END
+    return NULL;
+END
+
+removeJob:
+    job_list loop:
+        IF job_list[i] != NULL:
+            IF joblist[i]->jid == jid:
+                free(joblist[i]);
+                joblist[i] = NULL;
+                break;
+            END IF
+        END IF     
+    END
+END
+
+moveJobToFg:
+    char *controlling_terminal = ttyname(STDIN_FILENO);
+
+    // Opening the controlling terminal
+    int terminal_fd = open(controlling_terminal, O_RDWR);
+
+    // Mark prev. fg job as bg
+    job_list loop:
+        IF job_list[i]->fg == 1:
+            job_list[i]->fg = 0;
+        END IF
+    END
+
+    // Mark target_job as fg and move
+    target_job->fg = 1;
+    tcsetpgrp(terminal_fd, target_job->pgid);
+
+    // Send a SIG_CONT if STOPPED
+    IF target_job->status == STOPPED:
+        IF kill(-1 * target_job->pgid, SIGCONT) != 0:
+            perror("kill");
+        END IF 
+        job->status = RUNNING;
+    END IF
+END
+
+
+initJob: 
+    // Find next jid
+    job_list loop:
+        nextjid = first null pointer
+    END
+    
+    proc_list loop:
+        set pjid
+    END
+
+    pgid = proc_list[0].pgid;
+    set fg, processes, status
+
+    // Malloc space in job_list and place job
+        
+    END IF
+END
+
+initProcess:
+    set pid, pgid, argc, argv
+END
+
+handleBuiltInCommand:
+    IF exit:
+        Check args
+        exit(0);
+    END IF
+
+    IF cd:
+        Check args
+        Call chdir - check return val
+    END IF
+    
+    IF fg:
+        Check args
+
+        // Find target job
+        Job *target_job;
+        IF jid given:
+            target_job = findJob(jid);
+            check val of target_job - THROW ERROR if empty
+        ELSE:
+            target_job = findLargestJob();
+        END IF-ELSE
+        check val of target_job - THROW ERROR if empty
+
+        // Move job to foreground
+        moveJobToFg(target_job);
+    END IF
+END
+
+
+main:
+    job_list = {NULL};
+    Process proc_list[256];
+    char *controlling_terminal = ttyname(STDIN_FILENO);
+
+    // Opening the controlling terminal
+    int terminal_fd = open(controlling_terminal, O_RDWR);
+
+    // Shell Process setup - setting group pid as shell pid, creating process
+    shell_pid = getpid();
+    setpgid(shell_pid, shell_pid);
+
+    Process shell_proc;
+    initProcess(&shell_proc, pid, pgid, argc, argv); // Everything exceept pjid which will be initialized in in initJob
+    procList = {shell_proc, {NULL}};
+
+    // Adding shell to joblist
+    Job* shell_job;
+    initJob(shell_job, &proc_list, fg);
+
+    // Ensuring shell is on the fg
+    tcsetpgrp(terminal_fd, shell_job->pgid);
+
+    while true:
+        // Prompt for user input
+        ibuf = userinput();
+
+        // Parse input for command and args
+        int child_argc;
+        char* child_argv[256];
+        parseInput(&child_argc, child_argv, ibuf); // Call initProcess() from here;
+
+        // Handle all built-in commands: exit, cd, jobs, fg, bg 
+        IF handleBuiltInCommand(&child_proc, job_list):
+            continue;
+        END IF
+
+        // Forking to create child process
+        pid_t child_pid = fork();
+
+        // Child process setup
+        setpgid(child_pid, child_pid);
+
+        struct Process child_proc;
+        initProcess(&child_proc, pid, pgid, argc, argv); // Everything except pjid which will be initialized in in initJob
+        procList = {child_proc};
+
+        // Adding shell to joblist
+        struct Job* child_job;
+        initJob(&child_job, &proc_list, fg);
+
+        // Placing child_proc on the fg
+        moveJobToFg(child_job);
+
+        IF child    
+            // Running command
+            int rc = execvp(process.argv[0], process.argv);
+            if(rc == -1) {
+                perror("Unable to execute command");
+                exit(-1);
+            }
+        END IF
+
+        IF parent:
+            IF child done:
+                removeJob(child_job);
+            END IF
+        END IF
+    END
+END

@@ -1,0 +1,3 @@
+ls -la
+sleep 10
+ls -la | wc

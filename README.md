@@ -2,13 +2,8 @@ Name: Shrey Ramesh
 CS Login: ramesh
 Email: snramesh@wisc.edu
 
-Implementation Status:
+Implementation Status: Everything should work as expected.
 
 Resources:
 
-~cs537-1/tests/P3/test-cd.csh
-~cs537-1/tests/P3/test-exec.csh
-~cs537-1/tests/P3/test-job-control.csh
-~cs537-1/tests/P3/test-pipe.csh
-
-cat README.md | gzip -c | gunzip -c | tail -n 10
+Used GNU pages for inspiration and learning how to build a job control shell. Basic logic stemmed from here: https://www.gnu.org/software/libc/manual/html_node/Implementing-a-Shell.html.

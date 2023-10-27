@@ -2,8 +2,11 @@ Name: Shrey Ramesh
 CS Login: ramesh
 Email: snramesh@wisc.edu
 
-Implementation Status: Everything should work as expected.
+Simple UNIX Shell with te following features:
+  * Interactive/Batch Modes
+  * Built-in commnads: exit, cd, fg, bg, jobs
+  * Piping
 
 Resources:
 
-Used GNU pages for inspiration and learning how to build a job control shell. Basic logic stemmed from here: https://www.gnu.org/software/libc/manual/html_node/Implementing-a-Shell.html.
+GNU Page: https://www.gnu.org/software/libc/manual/html_node/Implementing-a-Shell.html.
